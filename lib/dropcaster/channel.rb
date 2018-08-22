@@ -89,7 +89,7 @@ module Dropcaster
         logger.debug("Adding new item from file #{src}")
 
         # set author and image_url from channel if empty
-        if item.artist.blank?
+        if item.tag.artist.blank?
           logger.info("#{src} has no artist, using the channel's author")
           item.tag.artist = @attributes[:author]
         end
@@ -100,7 +100,7 @@ module Dropcaster
         end
 
         # construct absolute URL, based on the channel's enclosures_url attribute
-        item.url = URI.parse(enclosures_url) + item.file_name
+        item.url = URI.parse(enclosures_url) + item.file_path.each_filename.map { |p| url_encode(p) }.join('/')
 
         # Warn if keyword count is larger than recommended
         assert_keyword_count(item.keywords)
@@ -151,6 +151,7 @@ module Dropcaster
         @attributes[m.to_sym]
       end
     end
+    # rubocop:enable Style/MethodMissing
 
     def respond_to_missing?(meth, *)
       /=$/.match?(meth.id2name) || super
@@ -160,7 +161,7 @@ module Dropcaster
 
     def add_files(src)
       if File.directory?(src)
-        @source_files.concat(Dir.glob(File.join(src, '*.mp3')))
+        @source_files.concat(Dir.glob(File.join(src, '*.mp3'), File::FNM_CASEFOLD))
       else
         @source_files << src
       end

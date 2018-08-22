@@ -29,11 +29,10 @@ class TestChannelXML < MiniTest::Test
     Dropcaster::Channel.new(FIXTURES_DIR, @options.dup).to_rss
   end
 
-  def test_item
-    item = @channel.find('item').first
+  def test_itunes_item
+    item = @channel.find('item[title = "iTunes Name"]').first
     assert(item)
 
-    assert_equal('iTunes Name', item.find('title').first.content)
     assert_equal('iTunes Artist', item.find('itunes:author', NS_ITUNES).first.content)
     assert_equal('iTunes Description (Video Pane)', item.find('itunes:summary', NS_ITUNES).first.content)
     assert_equal('http://www.example.com/podcasts/everything/AllAboutEverything.jpg', item.find('itunes:image', NS_ITUNES).first['href'])
@@ -53,11 +52,31 @@ class TestChannelXML < MiniTest::Test
     assert_equal('3', item.find('itunes:duration', NS_ITUNES).first.content)
   end
 
+  def test_special_ampersand_item
+    # in the actual XML, this is "special &amp;.mp3", but it gets interpreted by XML::Document
+    # if it was just "special &.mp3", it would be invalid XML and we wouldn't get this far
+    item = @channel.find('item[title = "test/fixtures/special &.mp3"]').first
+    assert(item)
+
+    enclosure = item.find('enclosure').first
+    assert(enclosure)
+    assert_equal('http://www.example.com/podcasts/everything/test/fixtures/special%20%26.mp3', enclosure['url'])
+  end
+
+  def test_uppercase_extension_item
+    item = @channel.find('item[title = "test/fixtures/extension.MP3"]').first
+    assert(item)
+
+    enclosure = item.find('enclosure').first
+    assert(enclosure)
+    assert_equal('http://www.example.com/podcasts/everything/test/fixtures/extension.MP3', enclosure['url'])
+  end
+
   def test_attributes_mandatory
     options = { title: 'Test Channel',
                 url: 'http://www.example.com/',
                 description: 'A test channel',
-                enclosures_url: 'http://www.example.com/foo/bar', }
+                enclosures_url: 'http://www.example.com/foo/bar' }
 
     channel = channel_node(Dropcaster::Channel.new(FIXTURES_DIR, options).to_rss)
     assert_equal('Test Channel', channel.find('title').first.content)

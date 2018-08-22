@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-lib = File.expand_path('../lib', __FILE__)
+lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'dropcaster/version'
 
@@ -22,6 +22,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'activesupport'
   spec.add_dependency 'bundler'
+  spec.add_dependency 'nokogiri', '~> 1.8.2'
   spec.add_dependency 'null-logger'
   spec.add_dependency 'ruby-mp3info'
 
@@ -39,3 +40,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rb-inotify'
   spec.add_development_dependency 'rubocop'
 end
+# rubocop:enable Metrics/BlockLength

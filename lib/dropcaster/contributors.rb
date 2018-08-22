@@ -18,14 +18,21 @@ module Dropcaster
     end
 
     def contributor_summary(contributor)
-      "#{contributor_link(contributor)} (#{contributor.contributions} contributions)"
+      contributions = contributor.contributions
+      "#{contributor_link(contributor)} (#{contributions} contribution#{contributions == 1 ? '' : 's'})"
     end
 
     def contributor_link(contributor)
       if contributor.type == 'Anonymous'
         contributor.name.tr('[]', '()')
       else
-        "[#{@octokit.user(contributor.login).name}](#{contributor.html_url})"
+        # rubocop:disable Style/RescueStandardError
+        begin
+          "[#{@octokit.user(contributor.login).name}](#{contributor.html_url})"
+        rescue
+          contributor.login
+        end
+        # rubocop:enable Style/RescueStandardError
       end
     end
   end
